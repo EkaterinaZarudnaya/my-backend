@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	_ "embed"
 	"fmt"
 	"html/template"
 	"io"
@@ -13,13 +12,10 @@ import (
 	"time"
 )
 
-//go:embed templates/index.html
-var indexHtml string
+var IndexHtml string
 
 func Upload(w http.ResponseWriter, req *http.Request) {
-
-	//templateFile := template.Must(template.New("index.html").Parse(indexHtml))
-	templateFile := template.Must(template.ParseFiles("templates/index.html"))
+	templateFile := template.Must(template.New("index.html").Parse(IndexHtml))
 
 	if req.Method == http.MethodPost {
 		handleUpload(w, req)
@@ -30,10 +26,14 @@ func Upload(w http.ResponseWriter, req *http.Request) {
 }
 
 func handleUpload(w http.ResponseWriter, req *http.Request) {
+	var maxFileSize int64 = 5 * 1024 * 1024 //5MB
 
-	if e := req.ParseMultipartForm(10 << 20); e != nil {
-		http.Error(w, e.Error(), http.StatusBadRequest)
-		fmt.Println("parse err", e.Error())
+	req.Body = http.MaxBytesReader(w, req.Body, maxFileSize)
+
+	err := req.ParseMultipartForm(maxFileSize)
+	if err != nil {
+		fmt.Printf("Parse error - %v\n", err.Error())
+		http.Redirect(w, req, "/?success=false", http.StatusRequestEntityTooLarge)
 		return
 	}
 
