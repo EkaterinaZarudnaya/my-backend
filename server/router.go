@@ -7,8 +7,8 @@ import (
 )
 
 func RouteHandler() {
-
-	http.HandleFunc("/", handlers.Upload)
+	http.HandleFunc("/", handlers.Home)
+	http.HandleFunc("/upload", handlers.Upload)
 
 	log.Println("Listening on localhost:8080 ...")
 

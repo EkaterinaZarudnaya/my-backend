@@ -12,28 +12,28 @@ import (
 	"time"
 )
 
-var IndexHtml string
+var UploadHtml string
 
 func Upload(w http.ResponseWriter, req *http.Request) {
-	templateFile := template.Must(template.New("index.html").Parse(IndexHtml))
+	templateFile := template.Must(template.New("upload.html").Parse(UploadHtml))
 
 	if req.Method == http.MethodPost {
 		handleUpload(w, req)
 		return
 	}
 
-	templateFile.ExecuteTemplate(w, "index.html", nil)
+	templateFile.ExecuteTemplate(w, "upload.html", nil)
 }
 
 func handleUpload(w http.ResponseWriter, req *http.Request) {
-	var maxFileSize int64 = 5 * 1024 * 1024 //5MB
+	var maxFileSize int64 = 0.5 * 1024 * 1024 //5MB
 
 	req.Body = http.MaxBytesReader(w, req.Body, maxFileSize)
 
 	err := req.ParseMultipartForm(maxFileSize)
 	if err != nil {
 		fmt.Printf("Parse error - %v\n", err.Error())
-		http.Redirect(w, req, "/?success=false", http.StatusRequestEntityTooLarge)
+		http.Error(w, "Request Too Large", http.StatusRequestEntityTooLarge)
 		return
 	}
 
@@ -48,7 +48,7 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 
 	saveFile(fileHeader.Filename, file, w)
 
-	http.Redirect(w, req, "/?success=true", http.StatusSeeOther)
+	http.Redirect(w, req, "/upload", http.StatusSeeOther)
 }
 
 func saveFile(Filename string, file multipart.File, w http.ResponseWriter) {

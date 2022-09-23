@@ -9,7 +9,11 @@ import (
 //go:embed templates/index.html
 var indexHtml string
 
+//go:embed templates/upload.html
+var uploadHtml string
+
 func main() {
 	handlers.IndexHtml = indexHtml
+	handlers.UploadHtml = uploadHtml
 	server.RouteHandler()
 }
