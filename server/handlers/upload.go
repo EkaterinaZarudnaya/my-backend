@@ -3,13 +3,8 @@ package handlers
 import (
 	"fmt"
 	"html/template"
-	"io"
-	"mime/multipart"
+	"my-backend/service"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 var UploadHtml string
@@ -26,8 +21,7 @@ func Upload(w http.ResponseWriter, req *http.Request) {
 }
 
 func handleUpload(w http.ResponseWriter, req *http.Request) {
-	var maxFileSize int64 = 0.5 * 1024 * 1024 //5MB
-
+	var maxFileSize int64 = 5 * 1024 * 1024 //5MB
 	req.Body = http.MaxBytesReader(w, req.Body, maxFileSize)
 
 	err := req.ParseMultipartForm(maxFileSize)
@@ -37,38 +31,20 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	file, fileHeader, err := req.FormFile("file")
-	if err != nil {
-		fmt.Printf("File retrieval error: %v\n", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
-	}
-	fmt.Println("Retrieving the file successfully.")
-	defer file.Close()
+	files := req.MultipartForm.File["files"]
+	fmt.Println("Retrieving the files successfully.")
 
-	saveFile(fileHeader.Filename, file, w)
+	/*matrixA, n := service.ConvertItemToFlatFloat(service.ReadFile(files[0], w))
+	matrixB, m := service.ConvertItemToFlatFloat(service.ReadFile(files[1], w))
+	a := mat.NewDense(n, n, matrixA)
+	b := mat.NewDense(m, m, matrixB)
+	var mulResult mat.Dense
+	mulResult.Mul(a, b)
+	formatResult := mat.Formatted(&mulResult, mat.Prefix("    "), mat.Squeeze())
+	fmt.Printf("mulResult = %v", formatResult)*/
 
+	matrixA := service.ConvertItemToInt(service.ReadFile(files[0], w))
+	matrixB := service.ConvertItemToInt(service.ReadFile(files[1], w))
+	service.SaveFile(service.ConvertItemToString(service.MulMatrix(matrixA, matrixB)), w)
 	http.Redirect(w, req, "/upload", http.StatusSeeOther)
-}
-
-func saveFile(Filename string, file multipart.File, w http.ResponseWriter) {
-	dt := time.Now().Format("2006-01-02T15.04")
-	name := strings.TrimSuffix(Filename, filepath.Ext(Filename))
-	ext := filepath.Ext(Filename)
-
-	saveName := name + dt + ext
-	filePath := filepath.Join("uploads", saveName)
-
-	dest, err := os.Create(filePath)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	defer dest.Close()
-
-	if _, err = io.Copy(dest, file); err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	fmt.Println("The file was saved successfully.")
 }

@@ -7,8 +7,19 @@
   <body>
     <h1>Upload file</h1>
     <form action="/upload" method="post" enctype="multipart/form-data">
-      <input type="file" name="file" id="">
+      <input type="file" name="files" id="files" accept=".csv" multiple>
       <button type="submit"> Upload </button>
     </form>
   </body>
 </html>
+
+<script>
+  const input = document.querySelector('#files');
+  input.addEventListener('change', (e) => {
+    const files = input.files;
+    if (files.length !== 2) {
+      alert(`Only 2 files are allowed to upload.`);
+      return;
+    }
+  });
+</script>
