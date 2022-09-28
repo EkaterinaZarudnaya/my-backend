@@ -41,18 +41,11 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 	b := mat.NewDense(m, m, matrixB)
 	var mulResult mat.Dense
 	mulResult.Mul(a, b)
-	rawMatrixResult := mulResult.RawMatrix().Data
-	rowMatrixResult := mulResult.RawMatrix().Rows
-	colMatrixResult := mulResult.RawMatrix().Cols
-	var strMulResult [][]string
-	strMulResult = service.ConvertItemToString(rawMatrixResult, rowMatrixResult, colMatrixResult)
+	strMulResult := service.ConvertItemToString(
+		mulResult.RawMatrix().Data,
+		mulResult.RawMatrix().Rows,
+		mulResult.RawMatrix().Cols,
+	)
 	service.SaveFile(strMulResult, w)
-
-	/*formatResult := mat.Formatted(&mulResult, mat.Prefix("    "), mat.Squeeze())
-	fmt.Printf("mulResult = %v", formatResult)*/
-
-	/*	matrixA := service.ConvertItemToInt(service.ReadFile(files[0], w))
-		matrixB := service.ConvertItemToInt(service.ReadFile(files[1], w))
-		service.SaveFile(service.ConvertItemToString(service.MulMatrix(matrixA, matrixB)), w)*/
 	http.Redirect(w, req, "/upload", http.StatusSeeOther)
 }
