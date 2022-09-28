@@ -1,10 +1,11 @@
 package service
 
 import (
+	"fmt"
 	"strconv"
 )
 
-/*func ConvertItemToFlatFloat(data [][]string) ([]float64, int) {
+func ConvertItemToFlatFloat(data [][]string) ([]float64, int) {
 	var matrix []float64
 	var n int
 	for _, line := range data {
@@ -15,7 +16,7 @@ import (
 		}
 	}
 	return matrix, n
-}*/
+}
 
 func ConvertItemToInt(data [][]string) [][]int {
 	matrix := make([][]int, len(data))
@@ -42,13 +43,26 @@ func MulMatrix(matrix1 [][]int, matrix2 [][]int) [][]int {
 	return result
 }
 
-func ConvertItemToString(result [][]int) [][]string {
+/*func ConvertItemToString(result [][]int) [][]string {
 	strResult := make([][]string, len(result))
 	for i, line := range result {
 		strResult[i] = make([]string, len(line))
 		for j, item := range line {
 			strVar := strconv.Itoa(item)
 			strResult[i][j] = strVar
+		}
+	}
+	return strResult
+}*/
+
+func ConvertItemToString(result []float64, rows int, cols int) [][]string {
+	strResult := make([][]string, cols)
+	for i := range strResult {
+		strResult[i] = make([]string, rows)
+	}
+	for i, row := range strResult {
+		for j := range row {
+			strResult[i][j] = fmt.Sprintf("%.0f", result[i*rows+j])
 		}
 	}
 	return strResult

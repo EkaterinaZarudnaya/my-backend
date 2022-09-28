@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"gonum.org/v1/gonum/mat"
 	"html/template"
 	"my-backend/service"
 	"net/http"
@@ -34,17 +35,24 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 	files := req.MultipartForm.File["files"]
 	fmt.Println("Retrieving the files successfully.")
 
-	/*matrixA, n := service.ConvertItemToFlatFloat(service.ReadFile(files[0], w))
+	matrixA, n := service.ConvertItemToFlatFloat(service.ReadFile(files[0], w))
 	matrixB, m := service.ConvertItemToFlatFloat(service.ReadFile(files[1], w))
 	a := mat.NewDense(n, n, matrixA)
 	b := mat.NewDense(m, m, matrixB)
 	var mulResult mat.Dense
 	mulResult.Mul(a, b)
-	formatResult := mat.Formatted(&mulResult, mat.Prefix("    "), mat.Squeeze())
+	rawMatrixResult := mulResult.RawMatrix().Data
+	rowMatrixResult := mulResult.RawMatrix().Rows
+	colMatrixResult := mulResult.RawMatrix().Cols
+	var strMulResult [][]string
+	strMulResult = service.ConvertItemToString(rawMatrixResult, rowMatrixResult, colMatrixResult)
+	service.SaveFile(strMulResult, w)
+
+	/*formatResult := mat.Formatted(&mulResult, mat.Prefix("    "), mat.Squeeze())
 	fmt.Printf("mulResult = %v", formatResult)*/
 
-	matrixA := service.ConvertItemToInt(service.ReadFile(files[0], w))
-	matrixB := service.ConvertItemToInt(service.ReadFile(files[1], w))
-	service.SaveFile(service.ConvertItemToString(service.MulMatrix(matrixA, matrixB)), w)
+	/*	matrixA := service.ConvertItemToInt(service.ReadFile(files[0], w))
+		matrixB := service.ConvertItemToInt(service.ReadFile(files[1], w))
+		service.SaveFile(service.ConvertItemToString(service.MulMatrix(matrixA, matrixB)), w)*/
 	http.Redirect(w, req, "/upload", http.StatusSeeOther)
 }
