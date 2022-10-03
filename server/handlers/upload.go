@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	"gonum.org/v1/gonum/mat"
 	"html/template"
 	"my-backend/service"
+	"my-backend/storage"
 	"net/http"
 )
 
@@ -34,18 +34,23 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 
 	files := req.MultipartForm.File["files"]
 	fmt.Println("Retrieving the files successfully.")
+	matrixA := service.ConvertItemToInt(service.ReadFile(files[0], w))
+	matrixB := service.ConvertItemToInt(service.ReadFile(files[1], w))
+	result := service.ConvertItemToString(service.MulMatrix(matrixA, matrixB))
 
-	matrixA, n := service.ConvertItemToFlatFloat(service.ReadFile(files[0], w))
-	matrixB, m := service.ConvertItemToFlatFloat(service.ReadFile(files[1], w))
-	a := mat.NewDense(n, n, matrixA)
-	b := mat.NewDense(m, m, matrixB)
-	var mulResult mat.Dense
-	mulResult.Mul(a, b)
-	strMulResult := service.ConvertItemToString(
-		mulResult.RawMatrix().Data,
-		mulResult.RawMatrix().Rows,
-		mulResult.RawMatrix().Cols,
-	)
-	service.SaveFile(strMulResult, w)
+	if req.Form.Get("system") == "filesystem" {
+		fs := storage.Filesystem{
+			StrMulResult: result,
+			W:            w,
+		}
+		fs.SaveFile()
+	}
+	if req.Form.Get("system") == "aws" {
+		as := storage.Aws{
+			StrMulResult: result,
+		}
+		as.SaveFile()
+	}
+
 	http.Redirect(w, req, "/upload", http.StatusSeeOther)
 }

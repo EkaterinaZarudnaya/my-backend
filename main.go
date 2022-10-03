@@ -6,11 +6,12 @@ import (
 	"my-backend/server/handlers"
 )
 
-//go:embed templates/index.html
-var indexHtml string
-
-//go:embed templates/upload.html
-var uploadHtml string
+var (
+	//go:embed templates/index.html
+	indexHtml string
+	//go:embed templates/upload.html
+	uploadHtml string
+)
 
 func main() {
 	handlers.IndexHtml = indexHtml
