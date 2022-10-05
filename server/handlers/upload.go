@@ -3,12 +3,17 @@ package handlers
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"my-backend/service"
 	"my-backend/storage"
 	"net/http"
+	"strings"
 )
 
-var UploadHtml string
+var (
+	UploadHtml string
+	System     string
+)
 
 func Upload(w http.ResponseWriter, req *http.Request) {
 	templateFile := template.Must(template.New("upload.html").Parse(UploadHtml))
@@ -38,18 +43,14 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 	matrixB := service.ConvertItemToInt(service.ReadFile(files[1], w))
 	result := service.ConvertItemToString(service.MulMatrix(matrixA, matrixB))
 
-	if req.Form.Get("system") == "filesystem" {
-		fs := storage.Filesystem{
-			StrMulResult: result,
-			W:            w,
-		}
-		fs.SaveFile()
+	if strings.ToLower(System) == "filesystem" {
+		storage.NewFilesystem(result, w).SaveFile()
 	}
-	if req.Form.Get("system") == "aws" {
-		as := storage.Aws{
-			StrMulResult: result,
-		}
-		as.SaveFile()
+	if strings.ToLower(System) == "aws" {
+		storage.NewAwsSystem(result).SaveFile()
+	} else {
+		log.Fatalln("Invalid system parameter ", System)
+		return
 	}
 
 	http.Redirect(w, req, "/upload", http.StatusSeeOther)

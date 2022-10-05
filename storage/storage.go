@@ -45,6 +45,19 @@ func init() {
 	})))
 }
 
+func NewFilesystem(strMulResult [][]string, w http.ResponseWriter) *Filesystem {
+	return &Filesystem{
+		StrMulResult: strMulResult,
+		W:            w,
+	}
+}
+
+func NewAwsSystem(strMulResult [][]string) *Aws {
+	return &Aws{
+		StrMulResult: strMulResult,
+	}
+}
+
 func (fs Filesystem) SaveFile() {
 	csvFile, err := os.Create(filepath.Join("saved", saveName))
 	if err != nil {

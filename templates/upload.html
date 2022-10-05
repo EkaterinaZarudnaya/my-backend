@@ -9,17 +9,6 @@
     <form action="/upload" method="post" enctype="multipart/form-data">
       <input type="file" name="files" id="files" accept=".csv" multiple>
       <br><br>
-      <label>Save to ...</label> <br>
-      <label>
-        <input type="radio" name="system" value="filesystem" required checked>
-        Filesystem
-      </label>
-      <label>
-        <input type="radio" name="system" value="aws">
-        AWS
-      </label>
-      <br>
-      <br>
       <button type="submit"> Upload </button>
     </form>
   </body>
