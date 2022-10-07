@@ -6,10 +6,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -37,6 +39,7 @@ type Filesystem struct {
 
 type Aws struct {
 	StrMulResult [][]string
+	W            http.ResponseWriter
 }
 
 func init() {
@@ -52,9 +55,10 @@ func NewFilesystem(strMulResult [][]string, w http.ResponseWriter) *Filesystem {
 	}
 }
 
-func NewAwsSystem(strMulResult [][]string) *Aws {
+func NewAwsSystem(strMulResult [][]string, w http.ResponseWriter) *Aws {
 	return &Aws{
 		StrMulResult: strMulResult,
+		W:            w,
 	}
 }
 
@@ -67,6 +71,7 @@ func (fs Filesystem) SaveFile() {
 	defer csvFile.Close()
 
 	writeCsv(csvFile, fs.StrMulResult)
+	downloadResult(csvFile, fs.W)
 	fmt.Println("The file was saved successfully.")
 }
 
@@ -93,6 +98,8 @@ func (as Aws) SaveFile() {
 	if err != nil {
 		log.Fatalln("Error file uploading to AWS:", err)
 	}
+
+	downloadResult(tempCsvFile, as.W)
 }
 
 func writeCsv(file *os.File, strMulResult [][]string) {
@@ -104,4 +111,19 @@ func writeCsv(file *os.File, strMulResult [][]string) {
 		}
 	}
 	defer csvWriter.Flush()
+}
+
+func downloadResult(file *os.File, w http.ResponseWriter) {
+	tempBuffer := make([]byte, 512)
+	file.Read(tempBuffer)
+
+	FileStat, _ := file.Stat()
+	FileSize := strconv.FormatInt(FileStat.Size(), 10)
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment; filename="+saveName+"")
+	w.Header().Set("Content-Length", FileSize)
+
+	file.Seek(0, 0)
+	io.Copy(w, file)
 }

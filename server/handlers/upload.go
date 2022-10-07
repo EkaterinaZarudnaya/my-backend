@@ -47,7 +47,7 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 	case "filesystem":
 		storage.NewFilesystem(result, w).SaveFile()
 	case "aws":
-		storage.NewAwsSystem(result).SaveFile()
+		storage.NewAwsSystem(result, w).SaveFile()
 	default:
 		log.Fatalln("Invalid system parameter -", System)
 		return
