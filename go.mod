@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/aws/aws-sdk-go v1.44.107
 	github.com/dimchansky/utfbom v1.1.1
+	github.com/dsnet/golib/memfile v1.0.0
 )
 
 require (

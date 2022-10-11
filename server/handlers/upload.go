@@ -7,12 +7,19 @@ import (
 	"my-backend/service"
 	"my-backend/storage"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 )
 
 var (
 	UploadHtml string
 	System     string
+	name       = "multiplicationResult"
+	dt         = time.Now().Format("2006-01-02T15.04")
+	ext        = ".csv"
+	saveName   = name + dt + ext
+	resultFile *os.File
 )
 
 func Upload(w http.ResponseWriter, req *http.Request) {
@@ -45,9 +52,13 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 
 	switch strings.ToLower(System) {
 	case "filesystem":
-		storage.NewFilesystem(result, w).SaveFile()
+		localStorage := storage.NewFilesystem(result, w, saveName)
+		localStorage.UploadFile()
+		service.SaveNewCsv(service.ConvertByteToSrting(localStorage.GetFilesystemFile(), len(result)), saveName, w)
 	case "aws":
-		storage.NewAwsSystem(result, w).SaveFile()
+		awsStorage := storage.NewAwsSystem(result, w, saveName)
+		awsStorage.UploadFile()
+		service.SaveNewCsv(service.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
 	default:
 		log.Fatalln("Invalid system parameter -", System)
 		return
