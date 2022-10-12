@@ -7,19 +7,18 @@ import (
 	"my-backend/service"
 	"my-backend/storage"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
 
 var (
-	UploadHtml string
-	System     string
-	name       = "multiplicationResult"
-	dt         = time.Now().Format("2006-01-02T15.04")
-	ext        = ".csv"
-	saveName   = name + dt + ext
-	resultFile *os.File
+	UploadHtml  string
+	System      string
+	name              = "multiplicationResult"
+	dt                = time.Now().Format("2006-01-02T15.04")
+	ext               = ".csv"
+	saveName          = name + dt + ext
+	maxFileSize int64 = 5 * 1024 * 1024 //5MB
 )
 
 func Upload(w http.ResponseWriter, req *http.Request) {
@@ -34,7 +33,6 @@ func Upload(w http.ResponseWriter, req *http.Request) {
 }
 
 func handleUpload(w http.ResponseWriter, req *http.Request) {
-	var maxFileSize int64 = 5 * 1024 * 1024 //5MB
 	req.Body = http.MaxBytesReader(w, req.Body, maxFileSize)
 
 	err := req.ParseMultipartForm(maxFileSize)
