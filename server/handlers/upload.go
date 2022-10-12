@@ -44,9 +44,11 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 
 	files := req.MultipartForm.File["files"]
 	fmt.Println("Retrieving the files successfully.")
-	matrixA := service.ConvertItemToInt(service.ReadFile(files[0], w))
-	matrixB := service.ConvertItemToInt(service.ReadFile(files[1], w))
-	result := service.ConvertItemToString(service.MulMatrix(matrixA, matrixB))
+
+	matrixA, n := service.ConvertItemToFlatFloat(service.ReadFile(files[0], w))
+	matrixB, m := service.ConvertItemToFlatFloat(service.ReadFile(files[1], w))
+	mulResult := service.MulMatrix(matrixA, matrixB, n, m)
+	result := service.ConvertItemToString(mulResult.RawMatrix().Data, mulResult.RawMatrix().Rows, mulResult.RawMatrix().Cols)
 
 	switch strings.ToLower(System) {
 	case "filesystem":
