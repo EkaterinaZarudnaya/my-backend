@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"io"
 	"log"
-	"my-backend/service"
+	"my-backend/service/file"
 	"net/http"
 	"os"
 )
@@ -46,7 +46,7 @@ func (a Aws) UploadFile() {
 	if err != nil {
 		log.Fatalln("Error creating temporary file", err)
 	}
-	service.WriteCsv(tempCsvFile, a.StrMulResult)
+	file.WriteCsv(tempCsvFile, a.StrMulResult)
 
 	defer os.Remove(a.SaveName)
 	defer tempCsvFile.Close()

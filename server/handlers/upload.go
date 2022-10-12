@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"my-backend/service"
+	"my-backend/service/file"
+	"my-backend/service/matrix"
 	"my-backend/storage"
 	"net/http"
 	"strings"
@@ -45,20 +46,20 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 	files := req.MultipartForm.File["files"]
 	fmt.Println("Retrieving the files successfully.")
 
-	matrixA, n := service.ConvertItemToFlatFloat(service.ReadFile(files[0], w))
-	matrixB, m := service.ConvertItemToFlatFloat(service.ReadFile(files[1], w))
-	mulResult := service.MulMatrix(matrixA, matrixB, n, m)
-	result := service.ConvertItemToString(mulResult.RawMatrix().Data, mulResult.RawMatrix().Rows, mulResult.RawMatrix().Cols)
+	matrixA, n := matrix.ConvertItemToFlatFloat(file.Read(files[0], w))
+	matrixB, m := matrix.ConvertItemToFlatFloat(file.Read(files[1], w))
+	mulResult := matrix.Multiply(matrixA, matrixB, n, m)
+	result := matrix.ConvertItemToString(mulResult.RawMatrix().Data, mulResult.RawMatrix().Rows, mulResult.RawMatrix().Cols)
 
 	switch strings.ToLower(System) {
 	case "filesystem":
 		localStorage := storage.NewFilesystem(result, w, saveName)
 		localStorage.UploadFile()
-		service.SaveNewCsv(service.ConvertByteToSrting(localStorage.GetFilesystemFile(), len(result)), saveName, w)
+		file.SaveNewCsv(file.ConvertByteToSrting(localStorage.GetFilesystemFile(), len(result)), saveName, w)
 	case "aws":
 		awsStorage := storage.NewAwsSystem(result, w, saveName)
 		awsStorage.UploadFile()
-		service.SaveNewCsv(service.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
+		file.SaveNewCsv(file.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
 	default:
 		log.Fatalln("Invalid system parameter -", System)
 		return

@@ -1,4 +1,4 @@
-package service
+package matrix
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func ConvertItemToFlatFloat(data [][]string) ([]float64, int) {
 	return matrix, n
 }
 
-func MulMatrix(matrixA []float64, matrixB []float64, n int, m int) mat.Dense {
+func Multiply(matrixA []float64, matrixB []float64, n int, m int) mat.Dense {
 	a := mat.NewDense(n, n, matrixA)
 	b := mat.NewDense(m, m, matrixB)
 	var mulResult mat.Dense

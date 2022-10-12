@@ -1,4 +1,4 @@
-package service
+package file
 
 import (
 	"encoding/csv"
@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func ReadFile(file *multipart.FileHeader, w http.ResponseWriter) [][]string {
+func Read(file *multipart.FileHeader, w http.ResponseWriter) [][]string {
 	f, err := file.Open()
 	fl, _ := utfbom.Skip(f)
 	if err != nil {
@@ -63,7 +63,7 @@ func Split(r rune) bool {
 	return r == ';' || r == '\n'
 }
 
-func DownloadFile(file *os.File, w http.ResponseWriter, saveName string) {
+func Download(file *os.File, w http.ResponseWriter, saveName string) {
 	FileStat, _ := file.Stat()
 	FileSize := strconv.FormatInt(FileStat.Size(), 10)
 
@@ -84,5 +84,5 @@ func SaveNewCsv(newStrResult [][]string, saveName string, w http.ResponseWriter)
 	defer os.Remove(saveName)
 	defer newCsvFile.Close()
 	newCsvFile.Seek(0, 0)
-	DownloadFile(newCsvFile, w, saveName)
+	Download(newCsvFile, w, saveName)
 }

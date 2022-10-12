@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 	"log"
-	"my-backend/service"
+	"my-backend/service/file"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -30,7 +30,7 @@ func (fs Filesystem) UploadFile() {
 		return
 	}
 	defer csvFile.Close()
-	service.WriteCsv(csvFile, fs.StrMulResult)
+	file.WriteCsv(csvFile, fs.StrMulResult)
 	fmt.Println("The file was saved successfully into Filesystem.")
 }
 
