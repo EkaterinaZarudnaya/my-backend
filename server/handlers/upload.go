@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	System      string
 	name              = "multiplicationResult"
 	dt                = time.Now().Format("2006-01-02T15.04")
 	ext               = ".csv"
@@ -52,7 +51,9 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 	mulResult := matrix.Multiply(matrixA, matrixB, n, m)
 	result := matrix.ConvertItemToString(mulResult.RawMatrix().Data, mulResult.RawMatrix().Rows, mulResult.RawMatrix().Cols)
 
-	switch strings.ToLower(System) {
+	//system := os.Args[1]
+	system := "filesystem"
+	switch strings.ToLower(system) {
 	case "filesystem":
 		localStorage := storage.NewFilesystem(result, w, saveName)
 		localStorage.UploadFile()
@@ -62,7 +63,7 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 		awsStorage.UploadFile()
 		file.SaveNewCsv(file.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
 	default:
-		log.Fatalln("Invalid system parameter -", System)
+		log.Fatalln("Invalid system parameter -", system)
 		return
 	}
 
