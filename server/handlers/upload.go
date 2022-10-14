@@ -7,13 +7,13 @@ import (
 	"my-backend/service/file"
 	"my-backend/service/matrix"
 	"my-backend/storage"
+	"my-backend/templates"
 	"net/http"
 	"strings"
 	"time"
 )
 
 var (
-	UploadHtml  string
 	System      string
 	name              = "multiplicationResult"
 	dt                = time.Now().Format("2006-01-02T15.04")
@@ -23,7 +23,8 @@ var (
 )
 
 func Upload(w http.ResponseWriter, req *http.Request) {
-	templateFile := template.Must(template.New("upload.html").Parse(UploadHtml))
+	temps := templates.GetTemp()
+	templateFile := template.Must(template.New("upload.html").Parse(temps["upload"]))
 
 	if req.Method == http.MethodPost {
 		handleUpload(w, req)
