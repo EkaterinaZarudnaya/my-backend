@@ -18,7 +18,7 @@ var (
 	dt                = time.Now().Format("2006-01-02T15.04")
 	ext               = ".csv"
 	saveName          = name + dt + ext
-	maxFileSize int64 = 5 * 1024 * 1024 //5MB
+	maxFileSize int64 = 600 * 1024 * 1024 //600MB
 )
 
 func Upload(w http.ResponseWriter, req *http.Request) {
@@ -27,6 +27,7 @@ func Upload(w http.ResponseWriter, req *http.Request) {
 
 	if req.Method == http.MethodPost {
 		handleUpload(w, req)
+
 		return
 	}
 
@@ -45,11 +46,20 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 
 	files := req.MultipartForm.File["files"]
 	fmt.Println("Retrieving the files successfully.")
+	start := time.Now()
 
-	matrixA, n := matrix.ConvertItemToFlatFloat(file.Read(files[0], w))
+	/*matrixA, n := matrix.ConvertItemToFlatFloat(file.Read(files[0], w))
 	matrixB, m := matrix.ConvertItemToFlatFloat(file.Read(files[1], w))
 	mulResult := matrix.Multiply(matrixA, matrixB, n, m)
-	result := matrix.ConvertItemToString(mulResult.RawMatrix().Data, mulResult.RawMatrix().Rows, mulResult.RawMatrix().Cols)
+	result := matrix.ConvertItemToString(mulResult.RawMatrix().Data, mulResult.RawMatrix().Rows, mulResult.RawMatrix().Cols)*/
+
+	matrixA := matrix.ConvertItemToInt(file.Read(files[0], w))
+	matrixB := matrix.ConvertItemToInt(file.Read(files[1], w))
+	mulResult := matrix.MulMatrix(matrixA, matrixB)
+	result := matrix.ConvertItemToString(mulResult)
+
+	elapsed := time.Since(start)
+	log.Printf("Time: %s", elapsed)
 
 	//system := os.Args[1]
 	system := "filesystem"
