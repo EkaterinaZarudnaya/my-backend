@@ -8,7 +8,14 @@ import (
 	"strings"
 )
 
-func ReadCsv(file *multipart.FileHeader) ([][]string, error) {
+type servise struct {
+}
+
+func NewService() *servise {
+	return &servise{}
+}
+
+func (s *servise) ReadCsv(file *multipart.FileHeader) ([][]string, error) {
 	f, err := file.Open()
 	fl, _ := utfbom.Skip(f)
 	if err != nil {

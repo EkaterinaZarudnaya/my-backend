@@ -2,6 +2,9 @@ package matrix
 
 import "strconv"
 
+type MatInt [][]int
+type MatString [][]string
+
 /*func ConvertItemToFlatFloat(data [][]string) ([]float64, int) {
 	var matrix []float64
 	var n int
@@ -36,9 +39,9 @@ func ConvertItemToString(result []float64, rows int, cols int) [][]string {
 	return strResult
 }*/
 
-func ConvertItemToInt(data [][]string) [][]int {
-	matrix := make([][]int, len(data))
-	for i, line := range data {
+func (ms MatString) ToInt() MatInt {
+	matrix := make(MatInt, len(ms))
+	for i, line := range ms {
 		matrix[i] = make([]int, len(line))
 		for j, item := range line {
 			intVar, _ := strconv.Atoi(item)
@@ -48,8 +51,8 @@ func ConvertItemToInt(data [][]string) [][]int {
 	return matrix
 }
 
-func MulMatrix(matrix1 [][]int, matrix2 [][]int) [][]int {
-	result := make([][]int, len(matrix1))
+func MulMatrix(matrix1, matrix2 MatInt) MatInt {
+	result := make(MatInt, len(matrix1))
 	for i := 0; i < len(matrix1); i++ {
 		result[i] = make([]int, len(matrix1))
 		for j := 0; j < len(matrix2); j++ {
@@ -61,9 +64,9 @@ func MulMatrix(matrix1 [][]int, matrix2 [][]int) [][]int {
 	return result
 }
 
-func ConvertItemToString(result [][]int) [][]string {
-	strResult := make([][]string, len(result))
-	for i, line := range result {
+func (m MatInt) ToString() [][]string {
+	strResult := make([][]string, len(m))
+	for i, line := range m {
 		strResult[i] = make([]string, len(line))
 		for j, item := range line {
 			strVar := strconv.Itoa(item)

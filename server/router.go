@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func RouteHandler() {
+func RouteHandler(fs handlers.FileServise) {
 	http.HandleFunc("/", handlers.Home)
-	http.HandleFunc("/upload", handlers.Upload)
+	http.HandleFunc("/upload", handlers.Upload(fs))
 }

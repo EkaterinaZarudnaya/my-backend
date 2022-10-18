@@ -42,19 +42,8 @@ func DownloadNewCsv(newStrResult [][]string, saveName string, w http.ResponseWri
 		return err
 	}
 
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
-			log.Fatalln("Error removing file: ", err)
-		}
-	}(saveName)
-
-	defer func(newCsvFile *os.File) {
-		err := newCsvFile.Close()
-		if err != nil {
-			log.Fatalln("Error closing file: ", err)
-		}
-	}(newCsvFile)
+	defer os.Remove(saveName)
+	defer newCsvFile.Close()
 
 	_, err = newCsvFile.Seek(0, 0)
 	if err != nil {
@@ -62,5 +51,6 @@ func DownloadNewCsv(newStrResult [][]string, saveName string, w http.ResponseWri
 	}
 
 	handleDownload(newCsvFile, w, saveName)
+
 	return nil
 }
