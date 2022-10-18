@@ -48,13 +48,26 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("Retrieving the files successfully.")
 	start := time.Now()
 
-	/*matrixA, n := matrix.ConvertItemToFlatFloat(file.Read(files[0], w))
-	matrixB, m := matrix.ConvertItemToFlatFloat(file.Read(files[1], w))
+	/*matrixA, n := matrix.ConvertItemToFlatFloat(file.ReadCsv(files[0], w))
+	matrixB, m := matrix.ConvertItemToFlatFloat(file.ReadCsv(files[1], w))
 	mulResult := matrix.Multiply(matrixA, matrixB, n, m)
 	result := matrix.ConvertItemToString(mulResult.RawMatrix().Data, mulResult.RawMatrix().Rows, mulResult.RawMatrix().Cols)*/
 
-	matrixA := matrix.ConvertItemToInt(file.Read(files[0], w))
-	matrixB := matrix.ConvertItemToInt(file.Read(files[1], w))
+	readResultMatrA, err := file.ReadCsv(files[0])
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	matrixA := matrix.ConvertItemToInt(readResultMatrA)
+
+	readResultMatrB, err := file.ReadCsv(files[1])
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	matrixB := matrix.ConvertItemToInt(readResultMatrB)
 	mulResult := matrix.MulMatrix(matrixA, matrixB)
 	result := matrix.ConvertItemToString(mulResult)
 
@@ -67,11 +80,19 @@ func handleUpload(w http.ResponseWriter, req *http.Request) {
 	case "filesystem":
 		localStorage := storage.NewFilesystem(result, w, saveName)
 		localStorage.UploadFile()
-		file.SaveNewCsv(file.ConvertByteToSrting(localStorage.GetFilesystemFile(), len(result)), saveName, w)
+		err := DownloadNewCsv(file.ConvertByteToSrting(localStorage.GetFilesystemFile(), len(result)), saveName, w)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+		}
 	case "aws":
 		awsStorage := storage.NewAwsSystem(result, w, saveName)
 		awsStorage.UploadFile()
-		file.SaveNewCsv(file.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
+		err := DownloadNewCsv(file.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+		}
 	default:
 		log.Fatalln("Invalid system parameter -", system)
 		return

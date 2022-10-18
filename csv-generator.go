@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"encoding/csv"
 	"flag"
@@ -61,3 +62,4 @@ func writeCsv(file *os.File, strMulResult [][]string) error {
 	defer csvWriter.Flush()
 	return nil
 }
+*/
