@@ -1,19 +1,17 @@
 package storage
 
 import (
-	"my-backend/server/handlers"
-	"net/http"
+	"my-backend/service/file"
 )
 
 type Storage interface {
-	UploadToAws(s handlers.FileServise)
-	GetAwsFile() []byte
-	UploadFile(s handlers.FileServise)
-	GetFilesystemFile() []byte
+	UploadToAws(s file.CsvServise) error
+	GetAwsFile() ([]byte, error)
+	UploadToFilesystem(s file.CsvServise) error
+	GetFilesystemFile() ([]byte, error)
 }
 
 type SaveSystem struct {
 	StrMulResult [][]string
-	W            http.ResponseWriter
 	SaveName     string
 }

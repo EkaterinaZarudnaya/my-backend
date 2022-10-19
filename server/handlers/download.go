@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"my-backend/service/file"
 	"net/http"
 	"os"
 	"strconv"
@@ -29,7 +30,7 @@ func handleDownload(file *os.File, w http.ResponseWriter, saveName string) {
 	}
 }
 
-func DownloadNewCsv(fs FileServise, newStrResult [][]string, saveName string, w http.ResponseWriter) error {
+func DownloadNewCsv(fs file.CsvServise, newStrResult [][]string, saveName string, w http.ResponseWriter) error {
 	newCsvFile, err := os.CreateTemp("", saveName)
 	if err != nil {
 		log.Fatalln("Error creating temporary file", err)

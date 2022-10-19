@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+type CsvServise interface {
+	ReadCsv(file *multipart.FileHeader) ([][]string, error)
+	ConvertByteToSrting(body []byte, n int) [][]string
+	WriteCsv(file *os.File, strMulResult [][]string) error
+}
+
 type servise struct {
 }
 

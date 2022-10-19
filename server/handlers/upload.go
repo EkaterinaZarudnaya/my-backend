@@ -4,21 +4,14 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"mime/multipart"
+	"my-backend/service/file"
 	"my-backend/service/matrix"
 	"my-backend/storage"
 	"my-backend/templates"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
-
-type FileServise interface {
-	ReadCsv(file *multipart.FileHeader) ([][]string, error)
-	ConvertByteToSrting(body []byte, n int) [][]string
-	WriteCsv(file *os.File, strMulResult [][]string) error
-}
 
 var (
 	name              = "multiplicationResult"
@@ -28,7 +21,7 @@ var (
 	maxFileSize int64 = 600 * 1024 * 1024 //600MB
 )
 
-func Upload(fs FileServise) http.HandlerFunc {
+func Upload(fs file.CsvServise) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodPost:
@@ -44,7 +37,7 @@ func Upload(fs FileServise) http.HandlerFunc {
 	}
 }
 
-func handleUpload(fs FileServise) http.HandlerFunc {
+func handleUpload(fs file.CsvServise) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		req.Body = http.MaxBytesReader(w, req.Body, maxFileSize)
 
@@ -81,17 +74,38 @@ func handleUpload(fs FileServise) http.HandlerFunc {
 		system := "filesystem"
 		switch strings.ToLower(system) {
 		case "filesystem":
-			localStorage := storage.NewFilesystem(result, w, saveName)
-			localStorage.UploadFile(fs)
-			err := DownloadNewCsv(fs, fs.ConvertByteToSrting(localStorage.GetFilesystemFile(), len(result)), saveName, w)
+			localStorage := storage.NewFilesystem(result, saveName)
+			err := localStorage.UploadToFilesystem(fs)
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+
+			receivedFile, err := localStorage.GetFilesystemFile()
+			if err != nil {
+				log.Fatalln("Error file getting from filesystem:", err)
+			}
+
+			err = DownloadNewCsv(fs, fs.ConvertByteToSrting(receivedFile, len(result)), saveName, w)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				http.Error(w, "Bad Request", http.StatusBadRequest)
 			}
+
 		case "aws":
-			awsStorage := storage.NewAwsSystem(result, w, saveName)
-			awsStorage.UploadFile(fs)
-			err := DownloadNewCsv(fs, fs.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
+			awsStorage := storage.NewAwsSystem(result, saveName)
+			err := awsStorage.UploadToFilesystem(fs)
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+
+			receivedFile, err := awsStorage.GetAwsFile()
+			if err != nil {
+				log.Fatalln("Error file getting from AWS:", err)
+			}
+
+			err = DownloadNewCsv(fs, fs.ConvertByteToSrting(receivedFile, len(result)), saveName, w)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				http.Error(w, "Bad Request", http.StatusBadRequest)

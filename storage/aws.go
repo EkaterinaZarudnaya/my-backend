@@ -6,9 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"io"
-	"log"
-	"my-backend/server/handlers"
-	"net/http"
+	"my-backend/service/file"
 	"os"
 )
 
@@ -27,18 +25,17 @@ func init() {
 	})))
 }
 
-func NewAwsSystem(strMulResult [][]string, w http.ResponseWriter, saveName string) *SaveSystem {
+func NewAwsSystem(strMulResult [][]string, saveName string) *SaveSystem {
 	return &SaveSystem{
 		StrMulResult: strMulResult,
-		W:            w,
 		SaveName:     saveName,
 	}
 }
 
-func (ss SaveSystem) UploadToAws(fs handlers.FileServise) {
+func (ss SaveSystem) UploadToAws(fs file.CsvServise) error {
 	tempCsvFile, err := os.CreateTemp("", ss.SaveName)
 	if err != nil {
-		log.Fatalln("Error creating temporary file", err)
+		return err
 	}
 
 	fs.WriteCsv(tempCsvFile, ss.StrMulResult)
@@ -56,19 +53,20 @@ func (ss SaveSystem) UploadToAws(fs handlers.FileServise) {
 		Key:    aws.String(ss.SaveName),
 	})
 	if err != nil {
-		log.Fatalln("Error file uploading to AWS:", err)
+		return err
 	}
+	return nil
 }
 
-func (ss SaveSystem) GetAwsFile() []byte {
+func (ss SaveSystem) GetAwsFile() ([]byte, error) {
 	fmt.Println("Downloading: ", ss.SaveName)
 	resp, err := s3session.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(BUCKET_NAME),
 		Key:    aws.String(ss.SaveName),
 	})
 	if err != nil {
-		log.Fatalln("Error file getting from AWS:", err)
+		return nil, err
 	}
 	body, err := io.ReadAll(resp.Body)
-	return body
+	return body, nil
 }
