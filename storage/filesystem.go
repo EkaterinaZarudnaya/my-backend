@@ -3,39 +3,33 @@ package storage
 import (
 	"fmt"
 	"log"
-	"my-backend/service/file"
+	"my-backend/server/handlers"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
-type Filesystem struct {
-	StrMulResult [][]string
-	W            http.ResponseWriter
-	SaveName     string
-}
-
-func NewFilesystem(strMulResult [][]string, w http.ResponseWriter, saveName string) *Filesystem {
-	return &Filesystem{
+func NewFilesystem(strMulResult [][]string, w http.ResponseWriter, saveName string) *SaveSystem {
+	return &SaveSystem{
 		StrMulResult: strMulResult,
 		W:            w,
 		SaveName:     saveName,
 	}
 }
 
-func (fs Filesystem) UploadFile() {
-	csvFile, err := os.Create(filepath.Join("saved", fs.SaveName))
+func (ss SaveSystem) UploadFile(fs handlers.FileServise) {
+	csvFile, err := os.Create(filepath.Join("saved", ss.SaveName))
 	if err != nil {
-		http.Error(fs.W, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(ss.W, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	defer csvFile.Close()
-	file.WriteCsv(csvFile, fs.StrMulResult)
-	fmt.Println("The file was saved successfully into Filesystem.")
+	fs.WriteCsv(csvFile, ss.StrMulResult)
+	fmt.Println("The file was saved successfully into SaveSystem.")
 }
 
-func (fs Filesystem) GetFilesystemFile() []byte {
-	data, err := os.ReadFile("saved/" + fs.SaveName)
+func (ss SaveSystem) GetFilesystemFile() []byte {
+	data, err := os.ReadFile("saved/" + ss.SaveName)
 	if err != nil {
 		log.Fatalln("Error file getting from filesystem:", err)
 	}

@@ -32,7 +32,7 @@ func (s *servise) ReadCsv(file *multipart.FileHeader) ([][]string, error) {
 	return data, nil
 }
 
-func WriteCsv(file *os.File, strMulResult [][]string) error {
+func (s *servise) WriteCsv(file *os.File, strMulResult [][]string) error {
 	csvWriter := csv.NewWriter(file)
 	csvWriter.Comma = ';'
 	for _, row := range strMulResult {
@@ -44,7 +44,7 @@ func WriteCsv(file *os.File, strMulResult [][]string) error {
 	return nil
 }
 
-func ConvertByteToSrting(body []byte, n int) [][]string {
+func (s *servise) ConvertByteToSrting(body []byte, n int) [][]string {
 	strBody := string(body)
 	cont := strings.FieldsFunc(strBody, Split)
 

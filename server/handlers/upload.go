@@ -5,17 +5,19 @@ import (
 	"html/template"
 	"log"
 	"mime/multipart"
-	"my-backend/service/file"
 	"my-backend/service/matrix"
 	"my-backend/storage"
 	"my-backend/templates"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
 
 type FileServise interface {
 	ReadCsv(file *multipart.FileHeader) ([][]string, error)
+	ConvertByteToSrting(body []byte, n int) [][]string
+	WriteCsv(file *os.File, strMulResult [][]string) error
 }
 
 var (
@@ -56,11 +58,6 @@ func handleUpload(fs FileServise) http.HandlerFunc {
 		files := req.MultipartForm.File["files"]
 		fmt.Println("Retrieving the files successfully.")
 
-		/*matrixA, n := matrix.ConvertItemToFlatFloat(file.ReadCsv(files[0], w))
-		matrixB, m := matrix.ConvertItemToFlatFloat(file.ReadCsv(files[1], w))
-		mulResult := matrix.Multiply(matrixA, matrixB, n, m)
-		result := matrix.ConvertItemToString(mulResult.RawMatrix().Data, mulResult.RawMatrix().Rows, mulResult.RawMatrix().Cols)*/
-
 		readResultMatrA, err := fs.ReadCsv(files[0])
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -85,16 +82,16 @@ func handleUpload(fs FileServise) http.HandlerFunc {
 		switch strings.ToLower(system) {
 		case "filesystem":
 			localStorage := storage.NewFilesystem(result, w, saveName)
-			localStorage.UploadFile()
-			err := DownloadNewCsv(file.ConvertByteToSrting(localStorage.GetFilesystemFile(), len(result)), saveName, w)
+			localStorage.UploadFile(fs)
+			err := DownloadNewCsv(fs, fs.ConvertByteToSrting(localStorage.GetFilesystemFile(), len(result)), saveName, w)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				http.Error(w, "Bad Request", http.StatusBadRequest)
 			}
 		case "aws":
 			awsStorage := storage.NewAwsSystem(result, w, saveName)
-			awsStorage.UploadFile()
-			err := DownloadNewCsv(file.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
+			awsStorage.UploadFile(fs)
+			err := DownloadNewCsv(fs, fs.ConvertByteToSrting(awsStorage.GetAwsFile(), len(result)), saveName, w)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				http.Error(w, "Bad Request", http.StatusBadRequest)
