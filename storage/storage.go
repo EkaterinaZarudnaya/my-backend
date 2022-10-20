@@ -1,11 +1,17 @@
 package storage
 
 import (
-	"os"
+	"my-backend/service/file"
 )
 
 type Storage interface {
-	UploadFile()
-	GetAwsFile() *os.File
-	GetFilesystemFile()
+	UploadToAws(s file.CsvServise) error
+	GetAwsFile() ([]byte, error)
+	UploadToFilesystem(s file.CsvServise) error
+	GetFilesystemFile() ([]byte, error)
+}
+
+type SaveSystem struct {
+	StrMulResult [][]string
+	SaveName     string
 }
