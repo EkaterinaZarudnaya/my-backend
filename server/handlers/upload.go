@@ -6,6 +6,7 @@ import (
 	"log"
 	"my-backend/service/file"
 	"my-backend/service/matrix"
+	"my-backend/service/mongodb"
 	"my-backend/storage"
 	"my-backend/templates"
 	"net/http"
@@ -21,12 +22,12 @@ var (
 	maxFileSize int64 = 600 * 1024 * 1024 //600MB
 )
 
-func Upload(fs file.CsvServise) http.HandlerFunc {
+func Upload(fs file.CsvServise, ms mongodb.ResultDownloadsServise) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodPost:
 			start := time.Now()
-			handleUpload(fs)(w, req)
+			handleUpload(fs, ms)(w, req)
 			elapsed := time.Since(start)
 			log.Printf("Time: %s", elapsed)
 		case http.MethodGet:
@@ -37,7 +38,7 @@ func Upload(fs file.CsvServise) http.HandlerFunc {
 	}
 }
 
-func handleUpload(fs file.CsvServise) http.HandlerFunc {
+func handleUpload(fs file.CsvServise, ms mongodb.ResultDownloadsServise) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		req.Body = http.MaxBytesReader(w, req.Body, maxFileSize)
 
@@ -114,6 +115,29 @@ func handleUpload(fs file.CsvServise) http.HandlerFunc {
 			log.Fatalln("Invalid system parameter -", system)
 			return
 		}
+
+		inputData := map[string]string{
+			"system":    strings.ToLower(system),
+			"fileName":  saveName,
+			"createdAt": dt,
+		}
+
+		err = ms.InitConnections()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			http.Redirect(w, req, "/upload", http.StatusSeeOther)
+		}
+
+		ms.NewData(inputData)
+
+		err = ms.InsertOneIntoCollect()
+
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			http.Redirect(w, req, "/upload", http.StatusSeeOther)
+		}
+
+		ms.Disconnections()
 
 		http.Redirect(w, req, "/upload", http.StatusSeeOther)
 	}
