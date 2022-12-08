@@ -7,7 +7,7 @@ services:
       - 27017:27017
 
   backend:
-    image: my-backend-image
+    image: zarudnaya/my-backend-img
     restart: always
     ports:
       - 8080:8080
