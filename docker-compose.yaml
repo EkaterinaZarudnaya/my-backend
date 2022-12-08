@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+
+  backend:
+    image: my-backend-image
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      CONFIG_MONGODB_URL: ${CONFIG_MONGODB_URL:-mongodb://mongo:27017/}

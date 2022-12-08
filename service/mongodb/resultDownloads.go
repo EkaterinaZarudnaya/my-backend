@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"os"
 	"time"
 )
 
@@ -32,9 +33,12 @@ func (s *servise) NewData(data map[string]string) {
 }
 
 func (s *servise) InitConnections() error {
+	mongoURL := os.Getenv("CONFIG_MONGODB_URL")
+
 	var err error
 
-	s.client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://kateryna:katya135@mybackendcluster.dvi6ngn.mongodb.net/?retryWrites=true&w=majority"))
+	//s.client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://kateryna:katya135@mybackendcluster.dvi6ngn.mongodb.net/?retryWrites=true&w=majority"))
+	s.client, err = mongo.NewClient(options.Client().ApplyURI(mongoURL))
 	if err != nil {
 		return err
 	}
